@@ -1,0 +1,79 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <script src = "https://mimicproject.com/libs/nexusUI.js">
+</script>
+ <script src = "https://mimicproject.com/libs/maximilian.v.0.1.js">
+</script>
+<link href="https://fonts.googleapis.com/css?family=Staatliches" rel="stylesheet"/>  
+ <link rel="stylesheet" href="https://mimicproject.com/libs/maximilian-example.css" /> 
+   <div>
+    <div id="title">Kexin Mei WEEK2</div>
+  <div><button id="playButton">Play</button></div>
+</div>
+<div id="oscilloscope"></div>
+<div id="spectrogram"></div>
+</head>
+<body>
+  
+  <!-- Maximilian code goes here -->
+  <script id = "myAudioScript">
+    var env = new Maximilian.maxiEnv();
+    var clock = new Maximilian.maxiClock();
+    var osc1 = new Maximilian.maxiOsc();
+    var osc2 = new Maximilian.maxiOsc();
+    var osc3 = new Maximilian.maxiOsc();
+    var osc4 = new Maximilian.maxiOsc();
+    var filter = new Maximilian.maxiFilter()
+//     env.setAttack(80);
+//     env.setDecay(100);
+//     env.setSustain(0.5);
+//     env.setRelease(800);
+  
+    clock.setTempo(120);
+    function play(){
+          clock.ticker();
+          var output1 = osc1.sinewave(100);
+        var output2= filter.hires(osc1.sinewave(20),(osc2.sinewave(20)+1) * 1000 ,20);
+        var output3= osc1.sinewave(100);
+        var outClock = clock.playHead %5==0;
+        var output4 = osc1.triangle(outClock)*0.8;
+       return [output2*2+output4,output3*output1];
+        }
+    
+//     function play() {
+//       clock.ticker();
+//       freq = clock.playHead % 12 == 0 ? 60:65;
+//       var trig = clock.playHead % 2 == 0;
+//       return osc.triangle(freq) * env.adsr(1, trig);
+//     }
+ 
+</script>
+  
+ <!-- Main Javascript code goes here --> 
+  <script language="javascript">
+    let maxi;
+      initAudioEngine().then((dspEngine)=>{ 
+      maxi = dspEngine;
+      setup();
+      //Get audio code from script element
+      maxi.setAudioCode("myAudioScript");
+    })
+    
+    ///////YOU CAN IGNORE ME - CODE FOR SCOPES///////
+    let setup = ()=> {
+      maxi.hush()
+      Nexus.context = maxi.audioWorkletNode.context;
+      new Nexus.Oscilloscope('oscilloscope', {'size': [400,100]}).connect(maxi.audioWorkletNode);
+      new Nexus.Spectrogram('spectrogram', {'size': [400,100]}).connect(maxi.audioWorkletNode);
+      const playButton = document.getElementById('playButton');   
+      let playAudio = () => {
+        playButton.innerHTML  = maxi.play() ? "STOP":"PLAY"
+      }
+      playButton.addEventListener("click", () => playAudio());
+    }
+    ///////////////////////////////////////////////
+ 
+</script>
+</body>
+</html>
