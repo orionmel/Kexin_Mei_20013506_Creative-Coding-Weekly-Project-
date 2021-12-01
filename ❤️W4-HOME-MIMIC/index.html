@@ -1,0 +1,181 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+   <script src = "https://mimicproject.com/libs/maximilian.js">
+</script>
+   <style type = "text/css" >
+body {
+        margin: 0px;
+        padding: 180px;
+      }
+
+ h1 { color: #FF0000; }
+</style>
+</head>
+  
+<body background="xyj.jpg">
+   <canvas id="myCanvas" width = "200" height= "200" style="border:1px solid #c3c3c3;"></canvas>
+  <canvas id="myCanvas2" width = "200" height= "200" style="border:1px solid #c3c3c3;"></canvas>
+  <h1 > Do you like monkey?????</h1>
+  <p ></p>
+   <canvas id="myCanvas3" width = "200" height= "200" style="border:1px solid #c3c3c3;"></canvas>
+  <canvas id="myCanvas4" width = "200" height= "200" style="border:1px solid #c3c3c3;"></canvas>
+</body>
+ <script language="javascript" type="text/javascript">
+		var maxi = maximilian();
+        var audio = new maxi.maxiAudio(); 
+
+
+		let soundcut = new maxi.maxiSample();
+		
+		audio.init();
+        audio.loadSample('monkeyfun.wav', soundcut);	
+
+		//图片
+		var imageObj = new Image();
+        imageObj.src = "eye10.jpg";
+  		 var imageWidth = imageObj.height;
+         var imageHeight = imageObj.width;
+ 		
+        //图片1
+ 		var canvas = document.getElementById('myCanvas');
+  		var context = canvas.getContext('2d');
+ 
+  		
+  		//图片2
+  		 var canvas2 = document.getElementById('myCanvas2');
+  		 var context2 = canvas2.getContext('2d');
+		
+		//图片3
+  		 var canvas3 = document.getElementById('myCanvas3');
+  		 var context3 = canvas3.getContext('2d');
+		//图片4
+  		 var canvas4 = document.getElementById('myCanvas4');
+  		 var context4 = canvas4.getContext('2d');
+
+
+        
+        //get data
+       //左边原图
+        context2.drawImage(imageObj,0,0);
+		
+
+        var imageData = context2.getImageData(0, 0, imageWidth, imageHeight);
+        
+        var data = imageData.data;
+        var imageData2 = context.getImageData(0, 0, imageWidth, imageHeight);
+  	    var imageData3 = context.getImageData(0, 0, imageWidth, imageHeight);
+		var imageData4 = context.getImageData(0, 0, imageWidth, imageHeight);
+  
+
+
+  		//鼠标
+   		var mouseX = 1;
+        var mouseY = 1;
+  		canvas.addEventListener('mousemove', getMouse, false);
+  
+  		var zoomX = 1;
+        var zoomY = 1;
+        var offsetX = 0;
+        var offsetY = 0;
+        var anchorX = 0;
+        var anchorY = 0;
+  
+  
+         var draw = function() {
+          
+            var mouseXNum = mouseX/1000;
+  //iterate all pixels
+    for(var i=0; i<imageHeight; i++){
+      //loop through each row
+        for(var j=0; j<imageWidth; j++){
+          
+//          //range for Y gradient
+//           var rangeY = mouseX;
+          var rangeY = 4;
+          var rangeAbove = (i-rangeY)*imageWidth;
+          var rangeBelow = (i+rangeY)*imageWidth;
+          //range for X gradient
+           var rangeX = rangeY;
+          
+         //range for blur
+          
+          var rangeRandom =5;//Good at value between 3 and 8
+          var rangeRanAbove = (i-rangeRandom)*imageWidth;
+          var rangeRanBelow = (i+rangeRandom)*imageWidth;
+          
+
+          
+          
+//           ////////////// try out your preference //////////////
+          if(Math.random()>0.5){
+          rangeRandom = 10;
+          }else if(Math.random()>0.2){
+          rangeRandom = 20;
+          }else{
+          rangeRandom =5;
+          }
+//           //////////////////// x gradient ////////////////////
+          
+ imageData2.data[((imageWidth*i)+j)*4] = (-1*data[((imageWidth*i)+j-rangeX)*4])+(data[((imageWidth*i)+j+rangeX)*4]);
+ imageData2.data[((imageWidth*i)+j)*4+1] = (-1*data[((imageWidth*i)+j-rangeX)*4+1])+(data[((imageWidth*i)+j+rangeX)*4]);
+ imageData2.data[((imageWidth*i)+j)*4+2] = (-1*data[((imageWidth*i)+j-rangeX)*4+2])+(data[((imageWidth*i)+j+rangeX)*4]);
+          
+ imageData2.data[((imageWidth*i)+j)*4+3] = 255;
+          
+//           //////////////////// x gradient ////////////////////
+          
+          
+//           //////////////////// y gradient ////////////////////
+          
+ imageData3.data[((imageWidth*i)+j)*4] = (-1*data[((rangeAbove)+j-1)*4])+(data[((rangeBelow)+j+1)*4]);
+ imageData3.data[((imageWidth*i)+j)*4+1] = (-1*data[((rangeAbove)+j-1)*4+1])+(data[((rangeBelow)+j+1)*4]);
+ imageData3.data[((imageWidth*i)+j)*4+2] = (-1*data[((rangeAbove)+j-1)*4+2])+(data[((rangeBelow)+j+1)*4]);
+          
+ imageData3.data[((imageWidth*i)+j)*4+3] += 255;
+          
+//           //////////////////// y gradient ////////////////////
+          
+           //////////////////// blur ////////////////////     
+          imageData4.data[((imageWidth*i)+j)*4] = (-1*data[((imageWidth*i)+j-rangeRandom)*4])+(data[((imageWidth*i)+j+rangeRandom)*4])+(-1*data[((rangeRanAbove)+j-1)*4])+(data[((rangeRanBelow)+j+1)*4]);
+          imageData4.data[((imageWidth*i)+j)*4+1] = (-1*data[((imageWidth*i)+j-rangeRandom)*4+1])+(data[((imageWidth*i)+j+rangeRandom)*4])+(-1*data[((rangeRanAbove)+j-1)*4+1])+(data[((rangeRanBelow)+j+1)*4]);
+          imageData4.data[((imageWidth*i)+j)*4+2] = (-1*data[((imageWidth*i)+j-rangeRandom)*4+2])+(data[((imageWidth*i)+j+rangeRandom)*4])+(-1*data[((rangeRanAbove)+j-1)*4+2])+(data[((rangeRanBelow)+j+1)*4])
+          imageData4.data[((imageWidth*i)+j)*4+3] = 255
+        }
+    }
+
+  //view x gradient
+    context.putImageData(imageData2,0,0)
+  
+    //view y gradient
+    context3.putImageData(imageData3,0,0)
+  
+     //view blur
+    context4.putImageData(imageData4,0,0)
+           
+            
+           
+		requestAnimationFrame(draw);
+      };
+            requestAnimationFrame(draw);
+//sound -------------------------------------------------
+      audio.play = function() {
+      
+        
+        var out = soundcut .play();
+   
+    	  return out;
+      }
+  
+  //鼠标位置
+  function getMouse(mousePosition){
+    if(mousePosition.layerX || mousePosition.layerX === 0){
+        mouseX = mousePosition.layerX;
+        mouseY = mousePosition.layerY;
+    }else if(mousePosition.offsetX || mousePosition.offsetX === 0){
+        mouseX = mousePosition.offsetX;
+        mouseY = mousePosition.offsetY;
+    }
+}
+</script>
+</html>
