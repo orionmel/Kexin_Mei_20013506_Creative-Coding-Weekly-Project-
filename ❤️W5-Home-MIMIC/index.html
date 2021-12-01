@@ -1,0 +1,267 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <style>
+      canvas {
+        position: absolute;
+        top: 0;
+        left: 0;
+      }
+    </style>
+   <style type = "text/css" >
+
+
+body {
+  
+  background-color:rgb(255, 0, 0);
+  
+  }
+
+</style>
+</head>
+<body>
+  <canvas></canvas>
+  <script language="javascript" type="text/javascript">
+var fov = 500;
+
+var canvas = document.querySelector("canvas");
+var width = window.innerWidth;
+var height = window.innerHeight;
+var context = canvas.getContext("2d");
+canvas.setAttribute("width", width);
+canvas.setAttribute("height", height);
+canvas.addEventListener('mousemove',getMouse,false);
+var mouseX=0;
+var mouseY=0;
+var angleX = 0;
+var angleY = 0;
+
+var point = [];
+var point3d = [];
+var HALF_WIDTH = width/2 ;
+var HALF_HEIGHT = height / 2;
+
+var x3d = 0;
+var y3d = 0;
+var z3d = 0;
+
+var firstx2d=0;
+var firsty2d=0;
+var firstScale=0;
+var lastScale = 0;
+var lastx2d = 0;
+var lasty2d = 0;
+
+///////////初始化//////////////////////////////////
+var elements = 300;
+var x, y = 0;
+var lastX, lastY = 0;
+var firstX, firstY = 0;
+var r1, r2 = 0;
+//    var spacing = (Math.PI * 2) / elements;
+var m = 0;
+var n1 = 0;
+var n2 = 0;
+var n3 = 0;
+var b = 1;
+var a = 1;
+
+//开始制作sphere
+var dim = 120; 
+var spacing = ((Math.PI * 2) / dim);
+var numPoints = dim * dim;
+var size = 10;
+var counter=0;
+
+//开始制作angle///////////////////////////////////////////////
+ var angleXIncrease = 0;
+var angleYIncrease = 0;  
+//开始制作angle//////////////////////////////////////////////
+
+
+
+function draw() {
+ 
+    
+    m = Math.floor((mouseY / height) * 10);
+	m2 = Math.floor((mouseY / height) * 10);
+	n1 = (mouseX / width) * 10;
+   n2 = n3 = n1;  
+// var mouseX1=50;
+// var mouseY1=10;
+
+var points = [];
+    
+for (var i = 0; i < dim; i++) {
+			var z = size * Math.cos(spacing  * i) * (dim/8);
+
+    		var s = size * Math.sin(spacing  * i);
+
+    
+    for (var j = 0; j < dim; j++ ) {
+       
+r1 = size * Math.pow(Math.pow(Math.abs(Math.cos((m * spacing * j) / 4) / a), n2*m) + Math.pow(Math.abs(Math.sin((m * spacing * j) / 4)) / b, n3*m), -(1 / n1));     
+               
+               
+      				//用这个r1来算x，y
+					// 在目前的深度和大小创作圆形 ，用上'superforumula'
+					var point = [r1 * Math.cos(spacing * j) * s,r1 *Math.sin(spacing * j)*s,z];
+
+    
+        points.push(point);
+      
+      
+     
+    }
+}
+			var R =i*mouseY/320;
+			var G = 200 ;
+          var B = mouseY/2;
+          
+      
+    context.fillStyle ='rgba('+ R +', '+ G + ', '+ B +', 255)';//"rgb(200,50,50,50)";
+    context.fillRect(0, 0, width, height);
+    
+//     angleX+=((mouseX/width)-0.5)/4;
+//     angleY+=((mouseY/height)-0.5)/4;
+  angleXIncrease+=0.01;
+    angleYIncrease+=0.01;
+  
+  angleX = HALF_WIDTH +mouseY+angleXIncrease;
+  angleY = HALF_HEIGHT +300+mouseY+angleYIncrease;
+
+
+ // 在这里，我们遍历每个环并找出应该绘制的位置
+    for (let i = 0; i < numPoints; i+=dim) {
+
+        for (let j = 0; j <dim; j++ ) {
+        point3d = points[Math.floor(i+j)];
+        z3d = point3d[2];
+
+        if (z3d < -fov) z3d += 0;
+        
+        point3d[2] = z3d;
+ 
+ 
+    rotateX(point3d,angleX);
+    rotateY(point3d,angleY);
+ 
+ 
+        x3d = point3d[0];
+        y3d = point3d[1];
+        z3d = point3d[2];
+
+        var scale = (fov / (fov + z3d));
+
+
+        var x2d = (x3d * scale) + HALF_WIDTH;
+
+
+
+        var y2d = (y3d * scale) + HALF_HEIGHT;
+
+        if (j===0){
+            
+            firstx2d=x2d;
+            firsty2d=y2d;
+            firstScale=scale;           
+           
+            lastx2d=x2d;
+            lasty2d=y2d;
+            lastScale=scale;           
+    
+        }
+
+
+
+        context.lineWidth = scale;
+          var cSpacing = (255/numPoints);
+          var colourR =i*cSpacing*mouseY/320;
+			var colourG = i*cSpacing ;
+          var colourB = mouseY/2;
+          
+          context.strokeStyle= 'rgba('+ colourR +', '+ colourG + ', '+ colourB +', 255)';
+        //context.strokeStyle = "rgb(255,255,255)";
+        context.beginPath();
+        context.moveTo(lastx2d + lastScale, lasty2d);
+        context.lineTo(x2d + scale, y2d);
+        context.stroke();
+ 
+        lastx2d=x2d;
+        lasty2d=y2d;
+        lastScale=scale;
+
+
+        if (j==dim-1) {
+            
+        context.lineWidth = scale;
+
+        context.strokeStyle = "rgb(255,255,255)";
+        context.beginPath();
+        context.moveTo(lastx2d + lastScale, lasty2d);
+        context.lineTo(firstx2d + firstScale, firsty2d);
+        context.stroke();           
+            
+            
+            
+        }
+
+     }
+    }
+}
+
+setInterval(draw, 100);
+
+function rotateX(point3d,angleX) {
+        var	x = point3d[0]; 
+        var	z = point3d[2]; 
+	
+        var	cosRY = Math.cos(angleX);
+        var	sinRY = Math.sin(angleX);
+        
+        var	tempz = z; 
+        var	tempx = x;
+
+        x= (tempx*cosRY)+(tempz*sinRY);
+        z= (tempx*-sinRY)+(tempz*cosRY);
+
+        point3d[0] = x;
+        point3d[2] = z;
+          
+}
+
+function rotateY(point3d,angleY) {
+        var y = point3d[1];
+        var	z = point3d[2]; 
+	
+        var cosRX = Math.cos(angleY);
+        var sinRX = Math.sin(angleY);
+        
+        var	tempz = z; 
+        var	tempy = y;
+
+        y= (tempy*cosRX)+(tempz*sinRX);
+        z= (tempy*-sinRX)+(tempz*cosRX);
+
+        point3d[1] = y;
+        point3d[2] = z;
+          
+} 
+
+    //here's our function 'getMouse'.
+function getMouse (mousePosition) {
+//for other browsers..
+  if (mousePosition.layerX || mousePosition.layerX === 0) { // Firefox?
+    mouseX = mousePosition.layerX;
+    mouseY = mousePosition.layerY;
+  } else if (mousePosition.offsetX || mousePosition.offsetX === 0) { // Opera?
+    mouseX = mousePosition.offsetX;
+    mouseY = mousePosition.offsetY;
+  }
+}
+
+</script>
+ 
+</body>
+
+</html>
