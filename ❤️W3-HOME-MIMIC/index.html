@@ -1,0 +1,121 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+ <script src = "https://mimicproject.com/libs/maximilian.js">
+</script>
+
+</head>
+  <h1></h1>
+  <br><br>
+<body>
+    <canvas id ="myCanvas"></canvas>
+
+    <!-- Our javascript code -->
+    <script type="text/javascript">
+//basic sound --------------------------------------------------
+	    var maxi = maximilian();
+        var audio = new maxi.maxiAudio();      
+      	var myOsc1 = new maxi.maxiOsc();
+      	var myOsc2= new maxi.maxiOsc();
+        let birdcut = new maxi.maxiSample();
+        audio.init();
+        audio.loadSample('33.wav', birdcut);
+
+//mouse --------------------------------------------------
+        let mouseX 
+        var mouseY 
+        var TWO_PI = Math.PI * 2;
+        
+        let canvasWidth; 
+        var canvasHeight;
+
+        var canvas = document.getElementById("myCanvas");
+  
+
+
+        var context = canvas.getContext("2d");
+//canvas
+      window.onload=window.onresize=function setup(){
+        canvasWidth=window.innerWidth;
+        canvasHeight=window.innerHeight;
+        
+        canvas.style.position="fixed";
+        canvas.setAttribute("width",canvasWidth);
+        canvas.setAttribute("height",canvasHeight);
+        
+        canvas.style.top=0;
+        canvas.style.left=0;
+      }
+
+        canvas.addEventListener('mousemove', getMouse, false);
+
+        function getMouse(mousePosition) {
+                mouseX = mousePosition.layerX;
+                mouseY = mousePosition.layerY;
+        }
+		
+//sound --------------------------------------------------
+     var clock = new maxi.maxiClock();
+     var osc1 = new maxi.maxiOsc();
+     var osc2 = new maxi.maxiOsc();
+     var filter = new maxi.maxiFilter()
+     clock.setTempo(120);
+//draw -------------------------------------------------  
+
+    
+//draw -------------------------------------------------      
+        function draw() {
+            
+	   	var segments = 1000;
+		var spacing = TWO_PI / segments;
+		var radius = 200;
+		
+		context.globalAlpha="0.03";
+        context.fillStyle="#484848 ";
+        context.fillRect(0,0, canvasWidth, canvasHeight);
+
+         context.fillStyle = "#400000"; 
+         context.globalAlpha="0.08"; 
+          
+		context.beginPath();
+
+//LOOP1 ------------------------------------------------------------------------------------------
+		for (var i = 0; i < segments; i++) {
+		 context.strokeStyle = "#FFF333"; 
+		var x = mouseX+Math.sin(spacing * i * (mouseX/50)) * Math.cos(spacing * i * (mouseY/78)) * radius;
+        var y = mouseY+ Math.sin(spacing * i* (mouseX/50)) * Math.sin(spacing * i * (mouseY/50)) * radius;  
+ 
+	      context.lineTo(x+radius,y+radius); 
+            }
+ 
+ 
+             //draw the outline			
+            context.closePath();
+            context.stroke();
+            context.fill();
+        
+			requestAnimationFrame(draw);
+        }
+
+        //request the first animation frame
+        requestAnimationFrame(draw);
+    
+      
+//math -------------------------------------------------
+      audio.play = function() {
+        clock.ticker();
+        //var output1 = osc1.sinewave(20);
+        var output2= filter.hires(osc1.sinewave(0.2),(osc2.sinewave(0.5)+1) * 200 ,20);
+        //var output3= osc1.sinewave(100);
+        var out = birdcut.playOnce();
+   
+//     	var mix = 1.0 * out + (myOsc.sinewave(50 + (myOsc2.sinewave(19) * (myOsc3.sinewave(0.14583333333334) * 500))) / 50);
+        return out+output2
+      }
+
+
+</script>
+
+</body>
+</html>
