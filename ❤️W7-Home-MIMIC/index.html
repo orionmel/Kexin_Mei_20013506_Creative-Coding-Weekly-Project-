@@ -1,0 +1,203 @@
+<!DOCTYPE html>
+<head>
+<script crossorigin src = "https://cdnjs.cloudflare.com/ajax/libs/three.js/109/three.min.js">
+</script>
+  <script src = "https://mimicproject.com/libs/maximilian.js">
+</script>
+<meta name="viewport" content="width=device-width, user-scalable=no, minimum-scale=1.0, maximum-scale=1.0">
+	<style>
+		body {
+			margin: 0px;
+			background-color: #000000;
+			overflow: hidden;
+		}
+	</style>
+</head>
+<h1 style="color: #FFFFFF"> ❤️ W7: Kexin MEI 【The color of the heartbeat】</h1>
+<body>
+	<script id="vertexShader" type="x-shader/x-vertex">
+		uniform highp float time;
+
+		void main() {
+	        gl_Position = vec4(position,1.0) ;                
+		}
+
+</script>
+	<script id="fragmentShader" type="x-shader/x-fragment">
+		//============================================================
+		//PUT YOUR GLSL CODE HERE
+		//============================================================
+
+        precision mediump float;
+        
+        uniform vec2 resolution;
+        uniform vec2 mouse;
+        uniform highp float time;
+      
+//====================================正方形===============================================
+        float square(vec2 pos, float size) {
+ 			//0-1
+        	vec2 normCoords = gl_FragCoord.xy/resolution;
+            //矫正宽度
+            float aspect = resolution.x/resolution.y;
+            
+            size = abs(sin(time)) /2.+.2;
+            
+            if (length((normCoords.x-pos.y) *2.7* aspect)< size && length(normCoords.y-pos.x) < size) {
+    
+                return 1.0;
+            
+            } else {
+                
+                return 0.;
+            }
+        }
+    
+    
+//====================================画线===============================================   
+        float line(vec2 pos, float funct) {
+
+           return step(funct,pos.y)-step(funct,pos.y-0.5);
+        }
+        
+//====================================画圆形===============================================   
+        float circle(vec2 pos, float size) {
+            
+            size = 2./size;
+            size*=8.;
+            
+            float aspect = resolution.x/resolution.y;
+            
+            vec2 normCoord = vec2(gl_FragCoord.x/(resolution.x) * aspect,gl_FragCoord.y/resolution.y);
+            
+            float colour = distance(normCoord,pos);
+            return smoothstep(colour*0. * size, colour * size*0.4,1.);
+        }
+        
+        
+        
+        void main(){
+           vec2 pos = gl_FragCoord.xy/resolution;
+           
+           //line1
+           float y = 0.5+ (sin(time+pos.x*6.28) * 0.4);
+           vec3 linecolor = vec3(y);
+            
+            float lines = line(pos,y);
+            linecolor = vec3(lines,0.,0.);
+            
+            
+            
+       
+            float rect = square(vec2(0.5,0.1),1.0);
+            
+            float rect2 = square(vec2(0.2,0.2),0.5);
+             
+             float rect3 = square(vec2(0.4,0.3),0.8);
+             
+              float rect4 = square(vec2(0.6,0.45),1.0);
+            
+              float rect5 = square(vec2(0.4,0.6),0.8);
+             
+             float rect6 = square(vec2(0.65,0.75),0.8);
+             
+             float rect7 = square(vec2(0.35,0.9),0.8);
+
+            
+            //圆的颜色
+            float circleOne = circle(vec2(mouse.x,mouse.y),0.2);            
+          
+            //颜色
+            vec3 squareOne = vec3(0.9,mouse.y,0.9) * rect;
+            vec3 squareTwo = vec3(0.862,mouse.y,0.551) * rect2;
+            vec3 squareThree = vec3(0.2,mouse.y,0.551) * rect3;
+            vec3 squareFour = vec3(0.73,mouse.y,0.32) * rect4;
+            vec3 squareFive = vec3(0.52,mouse.y,0.31) * rect5;
+            vec3 squareSix = vec3(0.86,mouse.y,0.321) * rect6;
+            vec3 squareSeven = vec3(0.47,mouse.y,0.35) * rect7;
+            
+            
+         
+            vec4 graidentColor = vec4(abs(sin(time))*0.5-0.35, abs(cos(time))*0.8-0.2, abs(cos(time)), 1.0)*0.8;
+            
+         
+        	gl_FragColor = vec4(squareOne + squareTwo+squareThree+squareFour+squareFive+squareSix+squareSeven + circleOne+linecolor ,1.0)*graidentColor;
+        }
+		//============================================================
+		//END OF GLSL CODE
+		//============================================================
+
+</script>
+	<script>
+		//change the resolution here. 1 is highest
+		var pixel_resolution = 8;
+		var stats;
+		var camera, scene, renderer;
+		var uniforms;
+		init();
+		animate();
+       var maxi = maximilian();
+          var audio = new maxi.maxiAudio(); 
+
+
+		  let soundcut = new maxi.maxiSample();
+		
+		  audio.init();
+          audio.loadSample('heart.wav', soundcut);	
+      
+		function init() {
+
+			camera = new THREE.Camera();
+			camera.position.z = 1;
+			scene = new THREE.Scene();
+			var geometry = new THREE.PlaneBufferGeometry(2,2);
+			uniforms = { time: { type: 'f', value: 1.0 }, resolution: { type: 'v2', value: new THREE.Vector2() }, mouse: {type: "v2", value: new THREE.Vector2()}};
+			var material = new THREE.ShaderMaterial({ uniforms: uniforms, vertexShader: document.getElementById('vertexShader').textContent, fragmentShader: document.getElementById('fragmentShader').textContent });
+			var mesh = new THREE.Mesh(geometry, material);
+			scene.add(mesh);
+			renderer = new THREE.WebGLRenderer();
+			//Hack here to change resolution 
+			renderer.setPixelRatio(window.devicePixelRatio / pixel_resolution);
+			document.body.appendChild(renderer.domElement);
+			onWindowResize();
+			window.addEventListener('resize', onWindowResize, false);
+	        window.addEventListener('mousemove', onMouseMove, false);
+          
+          
+         
+
+		}
+      
+      //sound -------------------------------------------------
+      audio.play = function() {
+      
+        
+          var out = soundcut .play();
+   
+    	  return out;
+      }
+      
+      
+		function onWindowResize(event) {
+			renderer.setSize(window.innerWidth, window.innerHeight);
+			uniforms.resolution.value.x = renderer.domElement.width;
+			uniforms.resolution.value.y = renderer.domElement.height;
+
+		}
+		function animate() {
+			requestAnimationFrame(animate);
+			render();
+		}
+		function onMouseMove( event ) {
+        	uniforms.mouse.value.x = ( event.clientX / window.innerWidth );
+ 	        uniforms.mouse.value.y = ( 1-(event.clientY) / window.innerHeight
+ 	        );
+        }
+		function render() {
+			uniforms.time.value += 0.04;
+			renderer.render(scene, camera);
+		}
+
+</script>
+</body>
+</html>
